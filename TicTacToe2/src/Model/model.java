@@ -1,19 +1,64 @@
 package Model;
 
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Scanner;
 
 public class model {
 	// Game Board
-
+	FileWriter writer;
+	
 	private char[][] board = new char[3][3];
 	
 	//Keeps track if player is X or O
 	boolean xPlayer = true;
 	ArrayList<char[][]> gameState = new ArrayList<char[][]>();
+	ArrayList<String> dataList = new ArrayList<String>();
 	
+	public void fillList(){
+		String data = "";
+		for(int x = 0; x < gameState.size(); x++){
+		for(int i= 0; i < 3; i++ ){
+			for(int k = 0; k < 3; k++){
+				if(gameState.get(x)[i][k] == ' '){
+					data+= "0,";
+				}
+				if(gameState.get(x)[i][k] == 'x'){
+					if(!xPlayer){
+					data+="1,";
+					}else{
+						data+="2,";
+					}
+				}
+				if(gameState.get(x)[i][k] == 'o'){
+					if(!xPlayer){
+						data+="2,";
+						}else{
+							data+="1,";
+						}
+				}
+			}
+		}
+		dataList.add(data);
+		data = "";
+		}
+		
 	
-	public model(){
+		
+
+	}
+	public void writeToFile(String filename) throws IOException{
+		FileWriter file = new FileWriter(filename, true);
+		for(int i = 0; i < dataList.size(); i++){
+			file.write(dataList.get(i) + "\r\n");
+		}
+		file.close();
+	}
+	public model() throws IOException{
 		boolean fullpass = false;
 		initialize();
 		for(int i = 0; i < 9; i++){
@@ -25,6 +70,10 @@ public class model {
 				fullpass = true;
 			}
 		}
+		fillList();
+		for(int i = 0; i < dataList.size(); i++){
+			System.out.println(dataList.get(i));
+		}
 		if(xPlayer){
 			System.out.println("Player O is the winner!");
 		}else if(fullpass){
@@ -33,6 +82,8 @@ public class model {
 			
 			System.out.println("Player X is the winner!");
 		}
+		String location = "data.csv";
+		writeToFile(location);
 	}
 	// Sets all Characters in array to empty
 	 void initialize(){
@@ -56,9 +107,6 @@ public class model {
 		 if(!emplace(idxOne,idxTwo)){
 			 generalTurn();
 		 }
-		 gameState.add(board);
-		 printBoard();
-		 xPlayer = !xPlayer;
 		 
 	 }
 	 
@@ -73,11 +121,33 @@ public class model {
 			 
 		 }
 		 else{
+			 char[][] boardCopy = new char[3][3];
+			 for(int i = 0; i < 3; i++){
+				 for(int k = 0; k< 3; k++){
+					 boardCopy[i][k] = board[i][k];
+				 }
+			 }
 			 if(xPlayer){
+			 boardCopy[x][y] = 'x';
 			 board[x][y] = 'x';
+			 printBoard();
+			 xPlayer = !xPlayer;
+			 printArray(boardCopy);
+			 gameState.add(boardCopy);
+			 System.out.println(gameState.size());
+			 printArray(gameState.get(0));
 			 return true;
 		 }else{
-			 board[x][y] = 'o'; 
+			 
+			 boardCopy[x][y] = 'o';
+			 board[x][y] = 'o';
+			 printBoard();
+			 xPlayer = !xPlayer;
+			 printArray(boardCopy);
+			 gameState.add(boardCopy);
+			 
+			 System.out.println(gameState.size());
+			 printArray(gameState.get(0));
 			 return true;
 		 }
 		 
@@ -87,14 +157,14 @@ public class model {
 	boolean gameFinished(){
 	boolean finished = false;
 	//Diagonal Check
-		finished = (board[0][0] == board[1][1] && board[0][0] == board[2][2]) || (board[0][2] == board[1][1] && board[2][0] == board[1][1]) && board[1][1] != ' ';
+		finished = (board[0][0] == board[1][1] && board[0][0] == board[2][2]) && board[2][2] != ' ' || ((board[0][2] == board[1][1] && board[2][0] == board[1][1]) && board[0][2] != ' ');
 		
 		if(finished){
 			return true;
 		}
 	//Horizontal Check
 		for(int i = 0; i < 3; i++){
-			finished = board[i][0] == board[i][1] && board[i][1] == board[i][2] && board[i][0] != ' ';
+			finished = (board[i][0] == board[i][1] && board[i][1] == board[i][2]) && board[i][0] != ' ';
 			if(finished){
 				return true;
 			}
@@ -102,8 +172,8 @@ public class model {
 		// Vertical Check
 		
 		for(int i = 0; i < 3; i++){
-			finished = board[0][i] == board[1][i] && board[1][i] == board[2][i] && board[i][0] != ' ';
-			if(finished){
+			finished = (board[0][i] == board[1][i] && board[1][i] == board[2][i]) && board[0][i] != ' ';
+			if(finished){;
 				return true;
 			}
 		}
@@ -115,6 +185,15 @@ public class model {
 		System.out.print("[" + board[0][0]+ "]");System.out.print("[" +board[0][1] + "]");System.out.println("[" + board[0][2] + "]");
 		System.out.print("[" + board[1][0]+ "]");System.out.print("[" +board[1][1] + "]");System.out.println("[" + board[1][2] + "]");
 		System.out.print("[" + board[2][0]+ "]");System.out.print("[" +board[2][1] + "]");System.out.println("[" + board[2][2] + "]");
+	}
+	
+	public void printArray(char[][] array){
+		for(int i = 0; i < 3; i++){
+			for(int k = 0; k < 3; k++){
+				System.out.print(array[i][k]);
+			}
+		}
+		
 	}
 		
 }
